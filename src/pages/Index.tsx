@@ -1,16 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useEffect, useState } from 'react';
+import AuthScreen from '@/components/AuthScreen';
+import LockScreen from '@/components/LockScreen';
+import Dashboard from '@/components/Dashboard';
+import { isLocked, clearLock } from '@/lib/vault';
+
+type View = 'auth' | 'locked' | 'dashboard';
 
 const Index = () => {
+  const [view, setView] = useState<View>(() => (isLocked() ? 'locked' : 'auth'));
+
+  useEffect(() => {
+    if (isLocked()) setView('locked');
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
-      <span className="absolute bottom-8 left-1/2 -translate-x-1/2 inline-block bg-[#FF6637] text-white text-sm px-4 py-2 rounded-full whitespace-nowrap">
-        Подождите 5 минут, Юра создает первую версию проекта с нуля
-      </span>
-    </div>
+    <>
+      {view === 'locked' && (
+        <LockScreen
+          onExpire={() => {
+            clearLock();
+            setView('auth');
+          }}
+        />
+      )}
+      {view === 'auth' && (
+        <AuthScreen
+          onLocked={() => setView('locked')}
+          onSuccess={() => setView('dashboard')}
+        />
+      )}
+      {view === 'dashboard' && <Dashboard onLogout={() => setView('auth')} />}
+    </>
   );
 };
 
